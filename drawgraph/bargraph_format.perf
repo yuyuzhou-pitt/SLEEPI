@@ -1,0 +1,7 @@
+=harmean
+meanlabel=average
+=sortbmarks
+yformat=%gx
+xlabel=
+ylabel=Seconds in Range Times
+

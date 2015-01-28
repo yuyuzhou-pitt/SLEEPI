@@ -1,0 +1,123 @@
+Use syscall mmap to test interference.
+
+1. Test Preparing
+2. Senario1: Run test code (the majority syscall is mmap) without background noise.
+3. Senario2: Run test code with 1 background noise (the same test code).
+4. Senario3: Run test code with 2 background noise.
+5. Senario4: Run test code with 4 background noise.
+6. Senario5: Run test code with 8 background noise.
+7. Reference
+
+1. Test Preparing
+=================
+1.1 mmapcall.c (the majority syscall is mmap) 
+--------------
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <err.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int mmapcall(int N){
+    int len = 4096; // page size
+
+    int fd = -1; // anonymous mapping
+    char *anon;
+
+    char *addr = NULL;
+    /* initial mapping address */
+    addr = (char*)mmap(addr, len, PROT_READ, MAP_ANON|MAP_SHARED, fd, 0);
+
+    unsigned int i=0;
+    while(i<N){
+        /* allocate memory by using the same address with flag MAP_FIXED, 
+         * to avoid using up memory */
+        anon = (char*)mmap(addr, len, PROT_READ, MAP_ANON|MAP_SHARED|MAP_FIXED, fd, 0);
+        if (anon == MAP_FAILED){
+            errx(1, "either anon when i=%d", i);
+        }
+        /* sleep 1 us, to avoid using up cpu (usage ~= 50%). 
+         * Use 'mpstat -P ALL 1' to check each CPU usage */
+        usleep(1);
+        i++;
+    }
+    munmap(anon, len);
+    return EXIT_SUCCESS;
+}
+
+1.2 mmaptest.c
+---------------
+Set the initial N=100000 in mmaptest.c:
+#define N 100000
+
+int main(void){
+    mmapcall(N);
+    return 0;
+}
+
+1.4 Build and measure the time
+------------------------------
+1.4.1 Build target test program:
+$ gcc -o mmaptest mmaptest.c mmapcall.c
+
+1.4.2 Measure execution time:
+$ time ./mmaptest 
+
+real	0m14.582s
+user	0m0.130s
+sys	0m7.240s
+
+1.4.3 Also the execution time with strace:
+$ time numactl -N 0 -m 0  strace -o mmaptest.strace -e trace=memory -TCf numactl -N 0 -m 0 ./mmaptest
+
+real	0m33.779s
+user	0m3.551s
+sys	0m25.894s
+
+1.5 mmapnoise.c
+---------------
+Set N to make sure real time in 1.4.2 >= real time in 1.4.3. E.g. set N=300000 in mmapnoise.c:
+#define N 300000
+
+int main(void){
+    mmapcall(N);
+    return 0;
+}
+
+2. Senario1: Run test code without background noise
+===========
+$ numactl -N 0 -m 0  strace -o mmaptest_wo.data -e trace=memory -TCf numactl -N 0 -m 0 ./mmaptest
+
+3. Senario2: Run test code with 1 background noise
+===========
+$ numactl -N 0 -m 0  strace -o mmaptest_wo.data -e trace=memory -TCf numactl -N 0 -m 0 ./mmaptest
+$ numactl -N 1 -m 1 ./mmapnoise
+
+4. Senario3: Run test code with 2 background noise
+===========
+#!/bin/bash
+N=2 # how many tasks on each node
+PROG=./mmaptest
+NOISE=./mmapnoise
+TARGETDIR=.
+
+# Step 1: test
+numactl -N 0 -m 0  strace -o $TARGETDIR/mmaptest_w.1v${N}.data -e trace=memory -TCf numactl -N 0 -m 0 $PROG &
+# Step 2: noise on the other numa node
+for ((i=0;i<N;i++));do
+    numactl -N 1 -m 1 $NOISE &
+done
+wait # wait until all the background jobs finished
+
+5. Senario4: Run test code with 4 background noise
+===========
+Run script in Senario3 with N = 4.
+
+6. Senario5: Run test code with 8 background noise
+===========
+Run script in Senario3 with N = 8.
+
+7. Reference
+============
+Mmap man page: http://man7.org/linux/man-pages/man2/mmap.2.html
