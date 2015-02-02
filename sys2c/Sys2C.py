@@ -112,22 +112,29 @@ def line2c(sysname, func, retvalue, retdata):
         
     return retdata, funcline
 
-
 def parseline(line, sysCall, sysdata, retdata):
     cline = ""
 
     pid = line[0:5]
+    line = line[6:]
     if pid not in retdata:
         retdata[pid] = {} # each pid has it's own openfd, mmapaddr, and etc.
-    
+
     if "unfinished" in line:
-        print "unfinished found: %s" % line
+        #print "unfinished found: %s" % line
+        retdata[pid]['unfinished'] = (line.split('<unfinished ...>'))[0]
 
     else:
         #pdb.set_trace()
+        # combine the unfinished and resumed to one line
+        if "resumed" in line:
+            #print "resumed found: %s" % line
+            lineresumed = (line.split('resumed>'))[1]
+            line = "%s %s" % (retdata[pid]['unfinished'], lineresumed)
+
         cols = line.split(' = ')
         retvalue = cols[1].split()[0]
-        func = cols[0][6:]
+        func = cols[0]
 
         # 18003 read(255, "bin=`dirname ${bin}`\nbin=`cd \"$b"..., 5479) = 4614 <0.000040>
         # 18015 read(189, "[logging]\n default = FILE:/var/l"..., 8192) = 446 <0.000035>
@@ -137,18 +144,12 @@ def parseline(line, sysCall, sysdata, retdata):
             print retvalue
             func = "%s)" % func
 
-        #print "cols=%s" % (cols)
-        #print "cols=%s retvalue=%s" % (cols, retvalue)
         retvalue = int(cols[1].split()[0])
 
-        if "resumed" in line:
-            print "resumed found: %s" % line
+        sysname = cols[0].split('(')[0]
+        if sysname in sysCall:     
+            retdata[pid], cline = line2c(sysname, func, retvalue, retdata[pid])
 
-        else:
-            sysname = cols[0].split('(')[0].split()[1]
-            if sysname in sysCall: 
-                retdata[pid], cline = line2c(sysname, func, retvalue, retdata[pid])
-    
     if cline:
         if pid in sysdata.keys():
             sysdata[pid].append(cline)
