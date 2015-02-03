@@ -276,9 +276,6 @@ def parseline(line, sysCall, sysdata, retdata):
             func = "%s)" % cols[0]
             retvalue = cols[1].split()[0]
 
-        #print "cols_b =%s.\n" % cols
-        #retvalue = int(cols[1].split()[0])
-
         sysname = cols[0].split('(')[0]
         if sysname in sysCall:     
             retdata[pid], cline = line2c(sysname, func, retvalue, retdata[pid])
