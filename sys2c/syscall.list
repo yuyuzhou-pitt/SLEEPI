@@ -42,7 +42,7 @@
 100 epoll_wait_old
 100 eventfd
 100 eventfd2
-100 execve
+999 execve
 100 exit
 100 exit_group
 100 faccessat
