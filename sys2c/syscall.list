@@ -1,7 +1,7 @@
-# 100 convert directly: brk, access, rt_sigprocmask, gettid, mprotect, getrlimit, setrlimit
+# 100 convert directly: brk, access, rt_sigprocmask, mprotect, getrlimit, setrlimit
 # 200 replace address only: munmap, arch_prctl, set_robust_list
-# 999 skip: futex, clone
-# 100 ignore
+# 999 skip: futex, clone, execve, fork, pipe 
+# 900 ignore currently
 100 sysctl
 100 accept
 100 accept4
@@ -13,7 +13,7 @@
 100 alarm
 200 arch_prctl
 100 bind
-100 brk
+200 brk
 100 capget
 100 capset
 100 chdir
@@ -26,7 +26,7 @@
 100 clock_settime
 999 clone
 100 close
-100 connect
+701 connect
 100 creat
 100 create_module
 100 delete_module
@@ -44,9 +44,9 @@
 100 eventfd2
 999 execve
 100 exit
-100 exit_group
+900 exit_group
 100 faccessat
-100 fadvise64
+900 fadvise64
 100 fallocate
 100 fanotify_init
 100 fanotify_mark
@@ -70,7 +70,7 @@
 999 futex
 100 futimesat
 100 get_kernel_syms
-100 get_mempolicy
+700 get_mempolicy
 100 get_robust_list
 100 get_thread_area
 100 getcwd
@@ -79,7 +79,7 @@
 100 getegid
 100 geteuid
 100 getgid
-100 getgroups
+802 getgroups
 100 getitimer
 100 getpeername
 100 getpgid
@@ -93,9 +93,9 @@
 100 getrlimit
 100 getrusage
 100 getsid
-100 getsockname
+280 getsockname
 100 getsockopt
-100 gettid
+900 gettid
 100 gettimeofday
 100 getuid
 100 getxattr
@@ -129,7 +129,7 @@
 100 lseek
 100 lsetxattr
 100 lstat
-100 madvise
+200 madvise
 100 mbind
 100 migrate_pages
 100 mincore
@@ -139,11 +139,11 @@
 100 mknodat
 100 mlock
 100 mlockall
-100 mmap
+200 mmap
 100 modify_ldt
 100 mount
 100 move_pages
-100 mprotect
+200 mprotect
 100 mq_getsetattr
 100 mq_notify
 100 mq_open
@@ -167,8 +167,8 @@
 100 pause
 100 perf_event_open
 100 personality
-100 pipe
-100 pipe2
+999 pipe
+999 pipe2
 100 pivot_root
 100 poll
 100 ppoll
@@ -185,8 +185,8 @@
 100 quotactl
 100 read
 100 readahead
-100 readlink
-100 readlinkat
+200 readlink
+200 readlinkat
 100 readv
 100 reboot
 100 recvfrom
@@ -199,13 +199,13 @@
 100 request_key
 100 restart_syscall
 100 rmdir
-100 rt_sigaction
-100 rt_sigpending
-100 rt_sigprocmask
-100 rt_sigqueueinfo
-100 rt_sigreturn
-100 rt_sigsuspend
-100 rt_sigtimedwait
+701 rt_sigaction
+701 rt_sigpending
+701 rt_sigprocmask
+701 rt_sigqueueinfo
+701 rt_sigreturn
+701 rt_sigsuspend
+701 rt_sigtimedwait
 100 rt_tgsigqueueinfo
 100 sched_get_priority_max
 100 sched_get_priority_min
@@ -226,10 +226,10 @@
 100 sendfile
 100 sendmsg
 100 sendto
-200 set_mempolicy
-200 set_robust_list
+900 set_mempolicy
+999 set_robust_list
 100 set_thread_area
-200 set_tid_address
+900 set_tid_address
 100 setdomainname
 100 setfsgid
 100 setfsuid
@@ -258,10 +258,10 @@
 100 signalfd
 100 signalfd4
 100 socket
-100 socketpair
+280 socketpair
 100 splice
 100 stat
-100 statfs
+701 statfs
 100 swapoff
 100 swapon
 100 symlink
@@ -288,7 +288,7 @@
 100 tuxcall
 100 umask
 100 umount2
-100 uname
+701 uname
 100 unlink
 100 unlinkat
 100 unshare
@@ -301,7 +301,7 @@
 100 vhangup
 100 vmsplice
 100 vserver
-100 wait4
-100 waitid
+500 wait4
+500 waitid
 100 write
 100 writev
