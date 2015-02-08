@@ -55,7 +55,7 @@ int main(void){\n\
 /* default variables */\n\
 int fd; // default fd (=3), for file management\n\
 struct stat sb; // for stat\n\
-char buf[BUFSIZ]; // for read, write\n\
+char *buf; // for read, write\n\
 int currpid = getpid(); // for sched_getaffinity\n\
 cpu_set_t *mask; // for sched_getaffinity / sched_setaffinity\n\
 void *addr;\n\
