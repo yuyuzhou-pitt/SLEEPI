@@ -70,7 +70,7 @@
 999 futex
 100 futimesat
 100 get_kernel_syms
-700 get_mempolicy
+900 get_mempolicy
 100 get_robust_list
 100 get_thread_area
 100 getcwd
@@ -93,7 +93,7 @@
 100 getrlimit
 100 getrusage
 100 getsid
-280 getsockname
+900 getsockname
 100 getsockopt
 900 gettid
 100 gettimeofday
@@ -143,7 +143,7 @@
 100 modify_ldt
 100 mount
 100 move_pages
-200 mprotect
+201 mprotect
 100 mq_getsetattr
 100 mq_notify
 100 mq_open
@@ -158,7 +158,7 @@
 100 msync
 100 munlock
 100 munlockall
-200 munmap
+201 munmap
 100 nanosleep
 100 newfstatat
 100 nfsservctl
@@ -258,7 +258,7 @@
 100 signalfd
 100 signalfd4
 100 socket
-280 socketpair
+900 socketpair
 100 splice
 100 stat
 701 statfs
