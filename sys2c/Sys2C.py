@@ -58,8 +58,8 @@ struct stat sb; // for stat\n\
 char *buf; // for read, write\n\
 int currpid = getpid(); // for sched_getaffinity\n\
 cpu_set_t *mask; // for sched_getaffinity / sched_setaffinity\n\
-void *addr;\n\
-addr = mmap(NULL, 97021, PROT_READ, MAP_SHARED, -1, 0);\n\
+char *addr = NULL;\n\
+addr = mmap(NULL, 256*BUFSIZ, PROT_READ, MAP_ANON|MAP_SHARED, -1, 0);\n\
 \n\
 /* syscall begin */\n"
 
@@ -245,14 +245,14 @@ def line2c(sysname, func, retvalue, retdata):
             funclist[-2] = str(openfd)
             func = ', '.join(funclist)
 
+        if not re.search('NULL', func):
+            addrhex, func = l2c_addr_201(munmapdict, "addr", func)
+
         # store mapped address
         mmapaddr = "addr_%s" % timestr
         retdata["mmapaddr"] = mmapaddr
         munmapdict[retvalue] = mmapaddr # for munmap
         retdata["munmapaddr"] = munmapdict
-
-        if not re.search('NULL', func):
-            addrhex, func = l2c_addr_201(munmapdict, "addr", func)
 
         funcline = "char *%s; %s = %s;\n" % (mmapaddr, mmapaddr, func)
     elif "sched_" in sysname:
