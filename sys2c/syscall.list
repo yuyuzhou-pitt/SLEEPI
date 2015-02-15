@@ -1,6 +1,6 @@
 # 100 convert directly: brk, access, rt_sigprocmask, mprotect, getrlimit, setrlimit
 # 200 replace address only: munmap, arch_prctl, set_robust_list
-# 999 skip: futex, clone, execve, fork, pipe 
+# 999 skip: futex, clone, execve, fork, pipe, vfork
 # 900 ignore currently
 100 sysctl
 100 accept
@@ -11,9 +11,9 @@
 100 adjtimex
 100 afs_syscall
 100 alarm
-200 arch_prctl
+900 arch_prctl
 100 bind
-200 brk
+201 brk
 100 capget
 100 capset
 100 chdir
@@ -57,14 +57,14 @@
 100 fchownat
 100 fcntl
 100 fdatasync
-100 fgetxattr
+900 fgetxattr
 100 flistxattr
 100 flock
 999 fork
 100 fremovexattr
 100 fsetxattr
 100 fstat
-100 fstatfs
+900 fstatfs
 100 fsync
 100 ftruncate
 999 futex
@@ -74,8 +74,8 @@
 100 get_robust_list
 100 get_thread_area
 100 getcwd
-100 getdents
-100 getdents64
+900 getdents
+900 getdents64
 100 getegid
 100 geteuid
 100 getgid
@@ -98,7 +98,7 @@
 900 gettid
 100 gettimeofday
 100 getuid
-100 getxattr
+900 getxattr
 100 init_module
 100 inotify_add_watch
 100 inotify_init
@@ -118,7 +118,7 @@
 100 keyctl
 100 kill
 100 lchown
-100 lgetxattr
+900 lgetxattr
 100 link
 100 linkat
 100 listen
@@ -209,11 +209,11 @@
 100 rt_tgsigqueueinfo
 100 sched_get_priority_max
 100 sched_get_priority_min
-100 sched_getaffinity
+900 sched_getaffinity
 100 sched_getparam
 100 sched_getscheduler
 100 sched_rr_get_interval
-100 sched_setaffinity
+900 sched_setaffinity
 100 sched_setparam
 100 sched_setscheduler
 100 sched_yield
@@ -261,7 +261,7 @@
 900 socketpair
 100 splice
 100 stat
-701 statfs
+901 statfs
 100 swapoff
 100 swapon
 100 symlink
@@ -297,7 +297,7 @@
 100 utime
 100 utimensat
 100 utimes
-100 vfork
+999 vfork
 100 vhangup
 100 vmsplice
 100 vserver
