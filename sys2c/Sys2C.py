@@ -66,7 +66,7 @@ addr = mmap(NULL, 256*BUFSIZ, PROT_READ, MAP_ANON|MAP_SHARED, -1, 0);\n\
 \n\
 /* syscall begin */\n"
 
-cfiletail = "/* syscall end */\nreturn 0;\n}"
+cfiletail = "/* syscall end */\nexit(0);\n}"
 
 # https://sites.google.com/site/alpil0000/linux-64-bit-system-call-list
 sysText = open("syscall.list")
@@ -100,9 +100,10 @@ def l2c_addr_201(addrdict, addrstr, func):
         else:
             #pdb.set_trace()
             addrstr = "(void *)%s" % addrhex
+            func = re.sub("\,\ [0-9]+", ", 1", func)
+            #func = "" # arbitary memory can not be mmap/munmap/mprotect
 
     func = re.sub("\(%s" % addrreg, "(%s" % addrstr, func)
-
     return addrhex, func
 
 # replace fd
@@ -231,7 +232,7 @@ def line2c(sysname, func, retvalue, retdata):
         func = re.sub("\)", ", 0)", func)
         func = l2c_fd_300(openfd, func)
         func = l2c_comment_600("dents", func)
-        funcline = "%s;\n" % (func)
+        funcline = "%s;\n" % func
     elif "close" == sysname: 
         # close(fd);
         # 0 for stdin, 1 for stdout and 2 for stderr, and 255 for terminal I/O
@@ -245,7 +246,7 @@ def line2c(sysname, func, retvalue, retdata):
         # fcntl(3, F_SETFD, FD_CLOEXEC);
         # 0 for stdin, 1 for stdout and 2 for stderr, and 255 for terminal I/O
         #func = l2c_str_400(testfile, func)
-        funcline = "%s;\n" % (l2c_fd_300(openfd, func))
+        funcline = "%s;\n" % l2c_fd_300(openfd, func)
     elif "mmap" == sysname: 
         # char *char; char = mmap(NULL, 97021, PROT_READ, MAP_PRIVATE, 3, 0);
         # update the fd
@@ -263,6 +264,8 @@ def line2c(sysname, func, retvalue, retdata):
         munmapdict[retvalue] = mmapaddr # for munmap
         retdata["munmapaddr"] = munmapdict
 
+        #if func:
+        #   funcline = "char *%s; %s = %s;\n" % (mmapaddr, mmapaddr, func)
         funcline = "char *%s; %s = %s;\n" % (mmapaddr, mmapaddr, func)
     elif "sched_" in sysname:
         func = l2c_struct_700("mask", func)
@@ -294,7 +297,6 @@ def line2c(sysname, func, retvalue, retdata):
         #    pdb.set_trace()
         if munmapaddr:
             addrhex, func = l2c_addr_201(munmapdict, munmapaddr, func)
-            funcline = "%s;\n" % (func)
             if "munmap" == sysname:
                 munmapdict.pop(addrhex, None)  # remove after unmmap
                 retdata["munmapaddr"] = munmapdict 
@@ -303,17 +305,22 @@ def line2c(sysname, func, retvalue, retdata):
         #    funcline = "%s;\n" % func
         else:
             addrhex, func = l2c_addr_201(munmapdict, "addr", func)
+
+        if "void" in func:
+            func = "" # arbitary memory can not be munmap/mprotect
+
+        funcline = "%s;\n" % func
     elif "200" == sysDict[sysname]:
         if munmapaddr:
-            funcline = "%s;\n" % (l2c_addr_200(munmapaddr, func))
+            funcline = "%s;\n" % l2c_addr_200(munmapaddr, func)
             munmapdict.pop(retvalue, None)  # remove after unmmap
             retdata["munmapaddr"] = munmapdict
         elif mmapaddr:
-            funcline = "%s;\n" % (l2c_addr_200(mmapaddr, func))
+            funcline = "%s;\n" % l2c_addr_200(mmapaddr, func)
         else:
-            funcline = "%s;\n" % (l2c_addr_200("addr", func))
+            funcline = "%s;\n" % l2c_addr_200("addr", func)
     elif "300" == sysDict[sysname]: 
-        funcline = "%s;\n" % (l2c_fd_300(openfd, func))
+        funcline = "%s;\n" % l2c_fd_300(openfd, func)
     elif "701" == sysDict[sysname]: 
         funcline = l2c_struct_701(func, timestr)
     elif "700" == sysDict[sysname]: 
