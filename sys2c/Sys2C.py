@@ -256,6 +256,11 @@ def line2c(sysname, func, retvalue, retdata):
             funclist[-2] = str(openfd)
             func = ', '.join(funclist)
 
+        # remove MAP_FIXED when mmap, or segfault happens
+        if re.search('MAP_FIXED', func):
+            func = re.sub("\|MAP_FIXED", "", func)
+
+        # deal with those without NULL address
         if not re.search('NULL', func):
             addrhex, func = l2c_addr_201(munmapdict, "addr", func)
 
@@ -309,6 +314,9 @@ def line2c(sysname, func, retvalue, retdata):
 
         if "void" in func:
             func = "" # arbitary memory can not be munmap/mprotect
+
+        if "munmap(addr," in func:
+            func = "" # do not unmap the dummy addr
 
         funcline = "%s;\n" % func
     elif "200" == sysDict[sysname]:
